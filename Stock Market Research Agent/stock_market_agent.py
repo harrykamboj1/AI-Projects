@@ -40,49 +40,60 @@ sub_agents = [fundamental_analyst, technical_analyst, risk_analyst]
 
 
 # START AGENT
+def _ensure_iterable(x):
+    if x is None:
+        return []
+    if isinstance(x, (list, tuple, set)):
+        return x
+    return [x]
+
+
 def run_research(query: str):
-    """Run the deep stock market research agent and return the final message content with debug logging."""
     try:
         logging.info(f"Running research agent with query: {query}")
 
         llm = OllamaLLM(model=OLLAMA_MODEL, temperature=0)
 
+        subs = _ensure_iterable(sub_agents)
+        tools = _ensure_iterable(tool)
+
+        logging.debug("subagents after normalize: %s", subs)
+        logging.debug("tools after normalize: %s", tools)
+
         research_agent = create_deep_agent(
             model=llm,
             system_prompt=INSTRUCTIONS,
-            subagents=sub_agents,
-            tools=tool
+            subagents=subs,
+            tools=tools
         ).with_config({"recursion_limit": int(30)})
 
         result = research_agent.invoke({
             "messages": [
-                {
-                    "role": "user",
-                    "content": query
-                }
+                {"role": "user", "content": query}
             ]
         }, {"recursion_limit": 30})
 
         logging.debug("Research agent completed successfully.")
-        logging.debug(f"Final result: {result}")
+        logging.debug("Final result (raw): %r", result)
 
-        messages = result.get("messages", [])
-        output_text = ""
+        messages = result.get("messages", []) if isinstance(
+            result, dict) else []
 
         if not messages:
             logging.warning("No messages returned from the research agent.")
-            output_text = "No response from the research agent."
-        elif hasattr(messages[-1], "content"):
-            output_text = messages[-1].content
-            logging.debug(
-                f"Output content from object: {output_text}")
-        else:
-            logging.error("Unrecognized message format.")
-            output_text = "Error: Invalid response message format."
+            return "No response from the research agent."
 
-        return output_text
+        # prefer mapping objects or list-of-dicts structure
+        last = messages[-1]
+        if isinstance(last, dict) and "content" in last:
+            return last["content"]
+        elif hasattr(last, "content"):
+            return last.content
+        else:
+            logging.error("Unrecognized message format: %r", last)
+            return "Error: Invalid response message format."
     except Exception as e:
-        logging.error(f"Error running research agent: {e}")
+        logging.exception("Error running research agent")
         return f"Error: {e}"
 
 
