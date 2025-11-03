@@ -49,7 +49,7 @@ def run_research(query: str):
 
         research_agent = create_deep_agent(
             model=llm,
-            instructions=INSTRUCTIONS,
+            system_prompt=INSTRUCTIONS,
             subagents=sub_agents,
             tools=tool
         ).with_config({"recursion_limit": int(30)})
@@ -84,15 +84,6 @@ def run_research(query: str):
     except Exception as e:
         logging.error(f"Error running research agent: {e}")
         return f"Error: {e}"
-
-
-# Example research function — replace with your real implementation
-
-def run_research(query: str) -> str:
-    if not query:
-        return "Please enter a query."
-    # Your research logic goes here. Return markdown if you want formatted output.
-    return f"### Research result for: {query}\n\n- Point 1\n- Point 2\n\n**Conclusion:** Example summary."
 
 
 GRADIO_SERVER_NAME = os.environ.get("GRADIO_SERVER_NAME", "0.0.0.0")
