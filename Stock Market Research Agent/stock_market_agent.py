@@ -1,5 +1,5 @@
 from deepagents import create_deep_agent
-from langchain_ollama import OllamaLLM
+from langchain_ollama import ChatOllama
 from langchain_core.tools import tool
 from dotenv import load_dotenv
 import yfinance as yf
@@ -7,6 +7,8 @@ import logging
 import gradio as gr
 import json
 import os
+from tools import *
+
 
 logging.basicConfig(
     level=logging.DEBUG, format="%(asctime)s - %(levelname)s - %(message)s"
@@ -17,7 +19,7 @@ load_dotenv()
 
 
 # INITIALIZE LLM
-OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20B")
+OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "gpt-oss:20b")
 GRADIO_SERVER_NAME = os.getenv("GRADIO_SERVER_NAME", "")
 GRADIO_SERVER_PORT = os.getenv("GRADIO_SERVER_PORT", "")
 
@@ -35,35 +37,41 @@ technical_analyst = SUB_AGENTS["technical_analyst"]
 risk_analyst = SUB_AGENTS["risk_analyst"]
 
 
-# DEFINE TOOLS
+# DEFINE SUB AGENTS
 sub_agents = [fundamental_analyst, technical_analyst, risk_analyst]
 
 
+# DEFINE TOOLS
+tools = [getStockPrice, getFinancialStatement, getTechnicalIndicators]
+if web_search:
+    tools.extend([searchFinancialNews, searchMarketTrend])
+
 # START AGENT
-def _ensure_iterable(x):
-    if x is None:
-        return []
-    if isinstance(x, (list, tuple, set)):
-        return x
-    return [x]
+
+
+def _to_placeholder(obj):
+    try:
+        return {"__class__": type(obj).__name__, "module": type(obj).__module__}
+    except Exception:
+        return str(obj)
 
 
 def run_research(query: str):
     try:
         logging.info(f"Running research agent with query: {query}")
 
-        llm = OllamaLLM(model=OLLAMA_MODEL, temperature=0)
+        llm = ChatOllama(model=OLLAMA_MODEL, temperature=0)
 
-        subs = _ensure_iterable(sub_agents)
-        tools = _ensure_iterable(tool)
+        # subs = _to_placeholder(sub_agents)
+        # tools = _to_placeholder(tool)
 
-        logging.debug("subagents after normalize: %s", subs)
-        logging.debug("tools after normalize: %s", tools)
+        # logging.debug("subagents after normalize: %s", subs)
+        # logging.debug("tools after normalize: %s", tools)
 
         research_agent = create_deep_agent(
             model=llm,
             system_prompt=INSTRUCTIONS,
-            subagents=subs,
+            subagents=sub_agents,
             tools=tools
         ).with_config({"recursion_limit": int(30)})
 
@@ -79,19 +87,35 @@ def run_research(query: str):
         messages = result.get("messages", []) if isinstance(
             result, dict) else []
 
-        if not messages:
-            logging.warning("No messages returned from the research agent.")
-            return "No response from the research agent."
+        output_text = ""
 
-        # prefer mapping objects or list-of-dicts structure
-        last = messages[-1]
-        if isinstance(last, dict) and "content" in last:
-            return last["content"]
-        elif hasattr(last, "content"):
-            return last.content
+        if not messages:
+            logging.warning(
+                "No messages returned in result.")
+            output_text = "Error: No response messages received."
+        elif isinstance(messages[-1], dict):
+            output_text = messages[-1].get("content", "")
+            logging.debug(
+                f"Output content from dict: {output_text}")
+        elif hasattr(messages[-1], "content"):
+            output_text = messages[-1].content
+            logging.debug(
+                f"Output content from object: {output_text}")
         else:
-            logging.error("Unrecognized message format: %r", last)
-            return "Error: Invalid response message format."
+            logging.error("Unrecognized message format.")
+            output_text = "Error: Invalid response message format."
+
+        file_output = ""
+        if "files" in result:
+            file_output += "\n\n=== Generated Research Files ===\n"
+            for filename, content in result["files"].items():
+                preview = content[:500] + \
+                    "..." if len(content) > 500 else content
+                file_output += f"\n**{filename}**\n{preview}\n"
+                logging.debug(
+                    f"File: {filename}, Preview: {preview[:100]}")
+
+        return output_text + file_output
     except Exception as e:
         logging.exception("Error running research agent")
         return f"Error: {e}"

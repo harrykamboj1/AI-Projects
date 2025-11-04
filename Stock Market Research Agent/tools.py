@@ -3,7 +3,6 @@ import json
 import os
 import yfinance as yf
 import logging
-from langchain_community.tools import BraveSearch
 from tavily import TavilyClient
 from dotenv import load_dotenv
 
@@ -53,6 +52,7 @@ def getStockPrice(symbol: str) -> str:
         return f"Error fetching stock data for {symbol}: {e}"
 
 
+@tool
 def getFinancialStatement(symbol: str) -> str:
     """Retrieve key financial statement data."""
     try:
