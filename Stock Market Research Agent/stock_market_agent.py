@@ -79,7 +79,7 @@ def run_research(query: str):
             "messages": [
                 {"role": "user", "content": query}
             ]
-        }, {"recursion_limit": 30})
+        }, {"recursion_limit": 100})
 
         logging.debug("Research agent completed successfully.")
         logging.debug("Final result (raw): %r", result)
@@ -124,6 +124,7 @@ def run_research(query: str):
 GRADIO_SERVER_NAME = os.environ.get("GRADIO_SERVER_NAME", "0.0.0.0")
 GRADIO_SERVER_PORT = int(os.environ.get("GRADIO_SERVER_PORT", 7860))
 
+
 with gr.Blocks() as demo:
     gr.Markdown("# Stock Market Research Agent")
 
@@ -144,6 +145,5 @@ with gr.Blocks() as demo:
         inputs=[query_input],
         outputs=[output_area],
     )
-
 demo.launch(server_name=GRADIO_SERVER_NAME,
             server_port=GRADIO_SERVER_PORT)
