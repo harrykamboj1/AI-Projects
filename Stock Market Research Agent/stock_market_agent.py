@@ -32,9 +32,22 @@ with open("sub_agents.json", "r") as f:
     SUB_AGENTS = json.load(f)
 
 
-fundamental_analyst = SUB_AGENTS["fundamental_analyst"]
-technical_analyst = SUB_AGENTS["technical_analyst"]
-risk_analyst = SUB_AGENTS["risk_analyst"]
+def ensure_backticked_type(sa: dict, expected: str) -> dict:
+    t = str(sa.get("type", "")).strip()
+    core = t.strip("`").strip().lower().replace(" ", "-")
+    if not core:
+        core = expected
+    sa["type"] = f"`{core}`"
+    return sa
+
+
+fundamental_analyst = ensure_backticked_type(
+    SUB_AGENTS["fundamental-analyst"], "fundamental-analyst")
+technical_analyst = ensure_backticked_type(
+    SUB_AGENTS["technical-analyst"],   "technical-analyst")
+risk_analyst = ensure_backticked_type(
+    SUB_AGENTS["risk-analyst"],        "risk-analyst")
+sub_agents = [fundamental_analyst, technical_analyst, risk_analyst]
 
 
 # DEFINE SUB AGENTS
