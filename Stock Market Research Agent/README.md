@@ -21,5 +21,6 @@ And it automatically brings down:
 9. Final Recommendation
 
 🎥 Demo Video: (attached below)👇
-https://github.com/user-attachments/assets/121e4ded-8969-4426-b1b4-da896908da8b
+
+[▶ Watch demo video](https://github.com/user-attachments/assets/121e4ded-8969-4426-b1b4-da896908da8b)
 
