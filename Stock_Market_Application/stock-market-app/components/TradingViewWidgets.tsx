@@ -1,4 +1,4 @@
-// TradingViewWidget.jsx
+"use client";
 import useTradingViewWidget from "@/hooks/useTradingViewWidget";
 import { cn } from "@/lib/utils";
 import React, { useEffect, useRef, memo } from "react";
