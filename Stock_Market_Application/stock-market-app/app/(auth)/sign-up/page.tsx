@@ -152,7 +152,7 @@ const SignUp: React.FC = () => {
               aria-describedby={errors.password ? "password-error" : undefined}
               {...register("password", {
                 required: "Password is required",
-                minLength: { value: 6, message: "Minimum 6 characters" },
+                minLength: { value: 8, message: "Minimum 8 characters" },
               })}
               className="pr-10"
             />
