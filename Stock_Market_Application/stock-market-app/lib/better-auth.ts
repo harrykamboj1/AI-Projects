@@ -11,10 +11,10 @@ export const getAuth = async ()=>{
 
     const mongoose = await connectToDatabase();
     const db = mongoose.connection.db;
-
+    console.log('MongoDB connected to better-auth');
     if(!db) throw new Error('MongoDB connection not found');
 
-    authInstance = await betterAuth({
+    authInstance = betterAuth({
         database: mongodbAdapter(db as any),
         secret:process.env.BETTER_AUTH_SECRET,
         baseURL:process.env.BETTER_AUTH_URL,
@@ -28,4 +28,7 @@ export const getAuth = async ()=>{
         },
         plugins: [nextCookies()],
     })
+    return authInstance;
 }
+
+export const auth = await getAuth();

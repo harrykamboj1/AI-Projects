@@ -21,18 +21,21 @@ import {
   PREFERRED_INDUSTRIES,
   RISK_TOLERANCE_OPTIONS,
 } from "@/lib/constants";
+import { signUpWithEmail } from "@/lib/actions/auth.actions";
+import { useRouter } from "next/navigation";
 
 type SignUpFormData = {
   fullName: string;
   email: string;
   password: string;
-  country?: string;
-  investmentGoals?: string;
-  riskTolerance?: string;
-  preferredIndustry?: string;
+  country: string;
+  investmentGoals: string;
+  riskTolerance: string;
+  preferredIndustry: string;
 };
 
-const SignUp: React.FC = () => {
+const SignUp = () => {
+  const router = useRouter();
   const [showPassword, setShowPassword] = React.useState(false);
 
   const {
@@ -63,7 +66,11 @@ const SignUp: React.FC = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      toast.success("Account created — check your email for verification");
+      const response = await signUpWithEmail(data);
+      if (response.success) {
+        router.push("/");
+      }
+      toast.success("Account created successfully!");
       reset();
     } catch (e) {
       console.error(e);

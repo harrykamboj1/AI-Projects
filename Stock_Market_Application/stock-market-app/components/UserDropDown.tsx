@@ -19,13 +19,18 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import NavItems from "./NavItems";
 
-const UserDropDown = () => {
+type User = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+const UserDropDown = ({ user }: { user: User }) => {
   const router = useRouter();
 
   const handleLogOut = async () => {
     router.push("/sign-in");
   };
-  const user = { name: "John Doe", email: "abc@gmail.com" };
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
