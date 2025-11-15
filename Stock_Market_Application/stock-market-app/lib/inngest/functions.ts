@@ -1,6 +1,7 @@
 import {inngest} from "@/lib/inngest/client";
 import { PERSONALIZED_WELCOME_EMAIL_PROMPT } from "./prompt";
 import { sendWelcomeEmail } from "../nodemailer";
+import { generateWithFallback } from "../modelRatelimit/availableModel";
 
 
 export const sendSignUpEmail = inngest.createFunction(
@@ -16,18 +17,20 @@ export const sendSignUpEmail = inngest.createFunction(
 
         const prompt = PERSONALIZED_WELCOME_EMAIL_PROMPT.replace("{{userProfile}}",userProfile)
 
-        const response = await step.ai.infer('generate-welcome-intro',{
-            model:step.ai.models.gemini({ model: 'gemini-2.5-flash-lite' }),
-            body: {
-                contents: [
-                    {
-                        role: 'user',
-                        parts: [
-                            { text: prompt }
-                        ]
-                    }]
-            }
-        })
+        // const response = await step.ai.infer('generate-welcome-intro',{
+        //     model:step.ai.models.gemini({ model: 'gemini-2.5-flash-lite' }),
+        //     body: {
+        //         contents: [
+        //             {
+        //                 role: 'user',
+        //                 parts: [
+        //                     { text: prompt }
+        //                 ]
+        //             }]
+        //     }
+        // })
+
+        const response = await generateWithFallback(step,'generate-welcome-intro',prompt,{})
 
         await step.run('send-welcome-email',async ()=>{
             console.log(`Sending welcome email to ${event.data.email}`)

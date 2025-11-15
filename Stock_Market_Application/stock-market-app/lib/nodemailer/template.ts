@@ -131,7 +131,7 @@ export const WELCOME_EMAIL_TEMPLATE = `<!DOCTYPE html>
                             <p class="lead" style="margin-bottom:18px">We'll keep you informed with timely updates, insights, and alerts — so you can focus on making the right calls.</p>
 
                             <div class="cta-wrap" align="center">
-                                <a href="https://stock-market-dev.vercel.app/" class="btn" role="button" aria-label="Go to Dashboard">Go to Dashboard</a>
+                                <a href=${process.env.PROD_URL ? process.env.PROD_URL : ''} class="btn" role="button" aria-label="Go to Dashboard">Go to Dashboard</a>
                             </div>
 
                             <div class="footer">© 2025 Invisly</div>
