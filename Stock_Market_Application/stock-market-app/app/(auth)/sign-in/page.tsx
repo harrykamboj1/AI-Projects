@@ -1,8 +1,10 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { signInWithEmail } from "@/lib/actions/auth.actions";
 import { Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,6 +16,7 @@ export interface SignUpFormData {
 
 const SignIn = () => {
   const [showPassword, setShowPassword] = React.useState(false);
+  const router = useRouter();
   const {
     register,
     handleSubmit,
@@ -29,14 +32,18 @@ const SignIn = () => {
 
   const onSubmit = async (data: SignUpFormData) => {
     try {
-      console.log("sign-in payload", data);
+      const response = await signInWithEmail(data);
+      if (response.success) {
+        router.push("/");
+      }
+      toast.success("Signed in successfully!");
+      reset();
     } catch (e) {
       console.error(e);
       toast.error("Sign in failed", {
-        description: e instanceof Error ? e.message : "Failed to sign in.",
+        description:
+          e instanceof Error ? e.message : "Failed to sign in account.",
       });
-    } finally {
-      reset({ password: "" });
     }
   };
 

@@ -50,8 +50,9 @@ export async function generateWithFallback(step, taskName, prompt, options = {})
             ]
           }
         });
-  
+        console.log(selectedModel + ' succeeded');
         const estimatedTokens = Math.ceil(prompt.length / 4);
+        console.log(estimatedTokens + ' tokens used');
         rateLimitTracker.recordUsage(selectedModel, estimatedTokens);
   
         return {

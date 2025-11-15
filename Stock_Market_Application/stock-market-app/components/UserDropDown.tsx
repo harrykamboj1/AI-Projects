@@ -18,6 +18,7 @@ import { useRouter } from "next/navigation";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import NavItems from "./NavItems";
+import { signout } from "@/lib/actions/auth.actions";
 
 type User = {
   id: string;
@@ -29,6 +30,7 @@ const UserDropDown = ({ user }: { user: User }) => {
   const router = useRouter();
 
   const handleLogOut = async () => {
+    await signout();
     router.push("/sign-in");
   };
   return (
