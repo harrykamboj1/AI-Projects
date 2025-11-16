@@ -10,7 +10,7 @@ import {
 } from "./ui/command";
 import { Button } from "./ui/button";
 import Link from "next/link";
-import { Loader2, TrendingUp } from "lucide-react";
+import { Loader2, Star, TrendingUp } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchStocks } from "@/lib/actions/alphaAdvantage.actions";
 
@@ -80,7 +80,7 @@ const SearchCommand = ({
 
   useEffect(() => {
     debounce();
-  }, [searchTerm]);
+  }, [searchTerm, debounce]);
 
   const handleSelectStock = () => {
     setOpen(false);
@@ -134,7 +134,7 @@ const SearchCommand = ({
                   <Link
                     href={`/stocks/${stock.symbol}`}
                     onClick={handleSelectStock}
-                    className="search-item-link"
+                    className="search-item-link hover:bg-gray-700 transition-all p-2"
                   >
                     <TrendingUp className="h-4 w-4 text-gray-500" />
                     <div className="flex-1">
@@ -143,6 +143,7 @@ const SearchCommand = ({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
+                    <Star />
                   </Link>
                 </li>
               ))}
