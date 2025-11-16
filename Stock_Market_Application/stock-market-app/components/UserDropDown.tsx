@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { LogOut } from "lucide-react";
 import NavItems from "./NavItems";
 import { signout } from "@/lib/actions/auth.actions";
+import { StockWithWatchlistStatus } from "./SearchCommand";
 
 type User = {
   id: string;
@@ -26,7 +27,13 @@ type User = {
   email: string;
 };
 
-const UserDropDown = ({ user }: { user: User }) => {
+const UserDropDown = ({
+  user,
+  initialStocks,
+}: {
+  user: User;
+  initialStocks: StockWithWatchlistStatus[];
+}) => {
   const router = useRouter();
 
   const handleLogOut = async () => {
@@ -80,7 +87,7 @@ const UserDropDown = ({ user }: { user: User }) => {
         </DropdownMenuItem>
         <DropdownMenuSeparator className="hidden sm:block bg-gray-600" />
         <nav className="sm:hidden">
-          <NavItems />
+          <NavItems initialStocks={initialStocks} />
         </nav>
       </DropdownMenuContent>
     </DropdownMenu>

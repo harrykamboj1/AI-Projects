@@ -3,6 +3,7 @@ import Link from "next/link";
 import React from "react";
 import NavItems from "@/components/NavItems";
 import UserDropDown from "@/components/UserDropDown";
+import { searchStocks } from "@/lib/actions/alphaAdvantage.actions";
 
 type User = {
   id: string;
@@ -11,6 +12,7 @@ type User = {
 };
 
 const Header = async ({ user }: { user: User }) => {
+  const initialStocks = await searchStocks();
   return (
     <header className="sticky top-0 header">
       <div className="container header-wrapper">
@@ -25,9 +27,9 @@ const Header = async ({ user }: { user: User }) => {
           <h1 className="text-white text-2xl font-semibold">Invisly</h1>
         </Link>
         <nav className="hidden sm:block">
-          <NavItems />
+          <NavItems initialStocks={initialStocks} />
         </nav>
-        <UserDropDown user={user} />
+        <UserDropDown user={user} initialStocks={initialStocks} />
       </div>
     </header>
   );

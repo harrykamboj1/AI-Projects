@@ -259,67 +259,47 @@ export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
     largeChartUrl: '',
 });
 
-export const POPULAR_STOCK_SYMBOLS = [
-    // Tech Giants (the big technology companies)
-    'AAPL',
-    'MSFT',
-    'GOOGL',
-    'AMZN',
-    'TSLA',
-    'META',
-    'NVDA',
-    'NFLX',
-    'ORCL',
-    'CRM',
-
-    // Growing Tech Companies
-    'ADBE',
-    'INTC',
-    'AMD',
-    'PYPL',
-    'UBER',
-    'ZOOM',
-    'SPOT',
-    'SQ',
-    'SHOP',
-    'ROKU',
-
-    // Newer Tech Companies
-    'SNOW',
-    'PLTR',
-    'COIN',
-    'RBLX',
-    'DDOG',
-    'CRWD',
-    'NET',
-    'OKTA',
-    'TWLO',
-    'ZM',
-
-    // Consumer & Delivery Apps
-    'DOCU',
-    'PTON',
-    'PINS',
-    'SNAP',
-    'LYFT',
-    'DASH',
-    'ABNB',
-    'RIVN',
-    'LCID',
-    'NIO',
-
-    // International Companies
-    'XPEV',
-    'LI',
-    'BABA',
-    'JD',
-    'PDD',
-    'TME',
-    'BILI',
-    'DIDI',
-    'GRAB',
-    'SE',
-];
+export const POPULAR_INDIAN_STOCK_SYMBOLS = [
+    'RELIANCE.BSE',
+    'TCS.BSE',
+    'INFY.BSE',
+    'HDFCBANK.BSE',
+    'ICICIBANK.BSE',
+    'HINDUNILVR.BSE',
+    'KOTAKBANK.BSE',
+    'SBIN.BSE',
+    'AXISBANK.BSE',
+    'LT.BSE',              // Larsen & Toubro
+    'BHARTIARTL.BSE',
+    'ITC.BSE',
+    'MARUTI.BSE',
+    'M&M.BSE',             // Mahindra & Mahindra
+    'HCLTECH.BSE',
+    'WIPRO.BSE',
+    'ASIANPAINT.BSE',
+    'NESTLEIND.BSE',
+    'TATAMOTORS.BSE',
+    'TATASTEEL.BSE',
+    'ONGC.BSE',
+    'POWERGRID.BSE',
+    'ULTRACEMCO.BSE',
+    'SUNPHARMA.BSE',
+    'DIVISLAB.BSE',
+    'SBILIFE.BSE',
+    'EICHERMOT.BSE',
+    'HDFCLIFE.BSE',
+    'ADANIPORTS.BSE',
+    'GRASIM.BSE',
+    'SHREECEM.BSE',
+    'HINDALCO.BSE',
+    'COALINDIA.BSE',
+    'BPCL.BSE',
+    'IOC.BSE',
+    'BHARATFORG.BSE',
+    'TECHM.BSE',
+    'INDUSINDBK.BSE',
+    'BRITANNIA.BSE'
+  ];
 
 export const NO_MARKET_NEWS =
     '<p class="mobile-text" style="margin:0 0 20px 0;font-size:16px;line-height:1.6;color:#4b5563;">No market news available today. Please check back tomorrow.</p>';

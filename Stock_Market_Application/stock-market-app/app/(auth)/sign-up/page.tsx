@@ -69,9 +69,11 @@ const SignUp = () => {
       const response = await signUpWithEmail(data);
       if (response.success) {
         router.push("/");
+        toast.success("Account created successfully!");
+        reset();
+      } else {
+        toast.error(response.error || "Sign up failed");
       }
-      toast.success("Account created successfully!");
-      reset();
     } catch (e) {
       console.error(e);
       toast.error("Sign up failed", {
