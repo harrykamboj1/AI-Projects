@@ -1,6 +1,8 @@
 'use server';
 import { cache } from "react";
 import { POPULAR_INDIAN_STOCK_SYMBOLS } from "../constants";
+import YahooFinance from "yahoo-finance2";
+
 
 type StockMatch = { [k: string]: string };
 type StockWithWatchlistStatus = {
@@ -16,6 +18,8 @@ const DEFAULT_TYPE = 'Stock';
 const ALPHA_TIMEOUT_MS = 7000;
 
 const ALPHA_ADVANTAGE_BASE_URL = 'https://www.alphavantage.co';
+const yahooFinance = new YahooFinance();
+
 
 async function fetchJson<T>(url: string, revalidateSeconds?: number, timeoutMs = ALPHA_TIMEOUT_MS): Promise<T> {
   const controller = new AbortController();
@@ -51,12 +55,6 @@ async function mapInBatches<T, R>(items: T[], batchSize: number, fn: (t: T) => P
 
 export const searchStocks = cache(async (query?: string): Promise<StockWithWatchlistStatus[]> => {
   try {
-    const token = process.env.ALPHA_ADVANTAGE_API_KEY;
-    if (!token) {
-      console.error('Stock Search: Alpha Vantage API key is not set');
-      return [];
-    }
-
     const queryParam = typeof query === 'string' ? query.trim() : '';
     let rawResults: StockWithWatchlistStatus[] = [];
 
@@ -67,11 +65,9 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         top,
         3,
         async (symbol) => {
-          const url = `${ALPHA_ADVANTAGE_BASE_URL}/query?function=SYMBOL_SEARCH&apikey=${token}&keywords=${encodeURIComponent(
-            symbol
-          )}`;
           try {
-            const profile = await fetchJson<any>(url, 3600);
+            console.log('Fetching profile for popular symbol', symbol);
+            const profile = await yahooFinance.search(symbol);
             return { symbol, profile } as { symbol: string; profile: any };
           } catch (err) {
             console.error('Error searching symbol', symbol, err);
@@ -82,13 +78,13 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
 
       for (const p of profiles) {
         const data = p.profile;
-        if (Array.isArray(data?.bestMatches)) {
-          for (const m of data.bestMatches as StockMatch[]) {
+        if (data && Array.isArray(data.quotes)) {
+          for (const quote of data.quotes) {
             rawResults.push({
-              symbol: m['1. symbol'] ?? p.symbol ?? 'N/A',
-              name: m['2. name'] ?? 'N/A',
-              exchange: m['4. region'] ?? '',
-              type: m['3. type'] ?? DEFAULT_TYPE,
+              symbol: quote.symbol ?? p.symbol ?? 'N/A',
+              name: quote.longname ?? quote.shortname ?? 'N/A',
+              exchange: quote.exchDisp ?? quote.exchange ?? '',
+              type: quote.quoteType ?? DEFAULT_TYPE,
               isInWatchlist: false
             });
           }
@@ -103,20 +99,19 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         }
       }
     } else {
-      const url = `${ALPHA_ADVANTAGE_BASE_URL}/query?function=SYMBOL_SEARCH&apikey=${token}&keywords=${encodeURIComponent(
-        queryParam
-      )}`;
-      const data = await fetchJson<any>(url, 1800);
-      if (Array.isArray(data?.bestMatches)) {
-        rawResults = data.bestMatches.map((m: StockMatch) => ({
-          symbol: m['1. symbol'] ?? 'N/A',
-          name: m['2. name'] ?? 'N/A',
-          exchange: m['4. region'] ?? '',
-          type: m['3. type'] ?? DEFAULT_TYPE,
+      console.log('Fetching profile for selected symbol', queryParam);
+      const data = await yahooFinance.search(queryParam);
+      
+      if (data === null || !data.quotes || !Array.isArray(data.quotes)) {
+        rawResults = [];
+      } else {
+        rawResults = data.quotes.map((quote: any) => ({
+          symbol: quote.symbol ?? 'N/A',
+          name: quote.longname ?? quote.shortname ?? 'N/A',
+          exchange: quote.exchDisp ?? quote.exchange ?? '',
+          type: quote.quoteType ?? DEFAULT_TYPE,
           isInWatchlist: false
         }));
-      } else {
-        rawResults = [];
       }
     }
 
@@ -138,8 +133,6 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
 
       if (normalized.length >= 10) break;
     }
-
-    if (process.env.NODE_ENV !== 'production') console.debug('searchStocks ->', normalized);
 
     return normalized;
   } catch (err) {

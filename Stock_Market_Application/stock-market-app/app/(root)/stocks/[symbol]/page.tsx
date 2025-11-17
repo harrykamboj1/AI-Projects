@@ -1,4 +1,5 @@
 import TradingViewWidgets from "@/components/TradingViewWidgets";
+import WatchListButton from "@/components/WatchListButton";
 import {
   BASELINE_WIDGET_CONFIG,
   CANDLE_CHART_WIDGET_CONFIG,
@@ -18,9 +19,7 @@ type StockDetailsParams = {
 const StockDetails = async ({ params }: StockDetailsParams) => {
   const { symbol } = await params;
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
-  const extractSymbol = symbol.includes(".BSE")
-    ? symbol.replace(/\.BSE$/i, "").toUpperCase()
-    : symbol.toUpperCase();
+  const extractSymbol = symbol.replace(/\.(BSE|BO|NS|NSE)$/i, "").toUpperCase();
 
   const finalSymbol = "BSE:" + extractSymbol;
 
@@ -53,11 +52,11 @@ const StockDetails = async ({ params }: StockDetailsParams) => {
         {/* Right column */}
         <div className="flex flex-col gap-6">
           <div className="flex items-center justify-between">
-            {/* <WatchlistButton
+            <WatchListButton
               symbol={symbol.toUpperCase()}
               company={symbol.toUpperCase()}
               isInWatchlist={false}
-            /> */}
+            />
           </div>
 
           <TradingViewWidgets

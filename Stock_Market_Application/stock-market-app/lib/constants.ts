@@ -260,22 +260,22 @@ export const COMPANY_FINANCIALS_WIDGET_CONFIG = (symbol: string) => ({
 });
 
 export const POPULAR_INDIAN_STOCK_SYMBOLS = [
-    'RELIANCE.BSE',
-    'TCS.BSE',
-    'INFY.BSE',
-    'HDFCBANK.BSE',
-    'ICICIBANK.BSE',
-    'HINDUNILVR.BSE',
-    'KOTAKBANK.BSE',
-    'SBIN.BSE',
-    'AXISBANK.BSE',
-    'LT.BSE',              // Larsen & Toubro
-    'BHARTIARTL.BSE',
-    'ITC.BSE',
-    'MARUTI.BSE',
-    'M&M.BSE',             // Mahindra & Mahindra
-    'HCLTECH.BSE',
-    'WIPRO.BSE',
+    'RELIANCE.BO',
+    'TCS.BO',
+    'INFY.BO',
+    'HDFCBANK.BO',
+    'ICICIBANK.BO',
+    'HINDUNILVR.BO',
+    'KOTAKBANK.BO',
+    'SBIN.BO',
+    'AXISBANK.BO',
+    'LT.BO',              // Larsen & Toubro
+    'BHARTIARTL.BO',
+    'ITC.BO',
+    'MARUTI.BO',
+    'M&M.BO',             // Mahindra & Mahindra
+    'HCLTECH.BO',
+    'WIPRO.BO',
     'ASIANPAINT.BSE',
     'NESTLEIND.BSE',
     'TATAMOTORS.BSE',

@@ -27,7 +27,7 @@ export type StockWithWatchlistStatus = Stock & {
 
 type SearchCommandProps = {
   renderAs?: "button" | "text";
-  label: string;
+  label?: string;
   initialStocks: StockWithWatchlistStatus[];
 };
 
@@ -80,7 +80,7 @@ const SearchCommand = ({
 
   useEffect(() => {
     debounce();
-  }, [searchTerm, debounce]);
+  }, [searchTerm]);
 
   const handleSelectStock = () => {
     setOpen(false);
