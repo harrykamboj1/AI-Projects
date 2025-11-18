@@ -23,7 +23,17 @@ const WatchListPage = async () => {
       </section>
     );
   }
-  return <section></section>;
+  return (
+    <section className="watchlist">
+      <div className="flex flex-col gap-6">
+        <div className="flex items-center justify-between">
+          <h2 className="watchlist-title">Watchlist</h2>
+          <SearchCommand initialStocks={initialStocks} />
+        </div>
+        {/* WatchlistTable */}
+      </div>
+    </section>
+  );
 };
 
 export default WatchListPage;

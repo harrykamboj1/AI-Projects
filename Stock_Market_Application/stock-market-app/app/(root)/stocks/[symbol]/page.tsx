@@ -1,5 +1,6 @@
 import TradingViewWidgets from "@/components/TradingViewWidgets";
 import WatchListButton from "@/components/WatchListButton";
+import { getStockNews } from "@/lib/actions/alphaAdvantage.actions";
 import {
   BASELINE_WIDGET_CONFIG,
   CANDLE_CHART_WIDGET_CONFIG,
@@ -8,7 +9,6 @@ import {
   SYMBOL_INFO_WIDGET_CONFIG,
   TECHNICAL_ANALYSIS_WIDGET_CONFIG,
 } from "@/lib/constants";
-import React from "react";
 
 type StockDetailsParams = {
   params: Promise<{
@@ -18,6 +18,11 @@ type StockDetailsParams = {
 
 const StockDetails = async ({ params }: StockDetailsParams) => {
   const { symbol } = await params;
+  if (!symbol) {
+    return <div>No symbol provided</div>;
+  }
+  const stockNews = await getStockNews(symbol);
+  console.log(stockNews);
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
   const extractSymbol = symbol.replace(/\.(BSE|BO|NS|NSE)$/i, "").toUpperCase();
 
@@ -78,8 +83,38 @@ const StockDetails = async ({ params }: StockDetailsParams) => {
           />
         </div>
       </section>
+      {stockNews.length > 0 && (
+        <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {stockNews.map((newsItem: any, index: number) => (
+            <NewsCard
+              key={index}
+              title={newsItem.title}
+              description={newsItem.description}
+              url={newsItem.url}
+            />
+          ))}
+        </section>
+      )}
     </div>
   );
 };
 
 export default StockDetails;
+
+function NewsCard({ title, description, url }: any) {
+  return (
+    <div className="bg-gray-900 p-6 rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col gap-4 border border-gray-700 hover:border-gray-500">
+      <h2 className="text-yellow-400 text-xl font-bold">{title}</h2>
+      <p className="text-gray-300 flex-grow">{description}</p>
+
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-400 hover:text-blue-300 underline font-medium"
+      >
+        Read more →
+      </a>
+    </div>
+  );
+}

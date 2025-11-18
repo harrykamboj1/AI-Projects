@@ -2,6 +2,7 @@
 import { cache } from "react";
 import { POPULAR_INDIAN_STOCK_SYMBOLS } from "../constants";
 import YahooFinance from "yahoo-finance2";
+import { StockNewsType } from "../types";
 
 
 type StockMatch = { [k: string]: string };
@@ -18,6 +19,7 @@ const DEFAULT_TYPE = 'Stock';
 const ALPHA_TIMEOUT_MS = 7000;
 
 const ALPHA_ADVANTAGE_BASE_URL = 'https://www.alphavantage.co';
+const MARKET_AUX_BASE_URL = 'https://api.marketaux.com/v1';
 const yahooFinance = new YahooFinance();
 
 
@@ -53,6 +55,33 @@ async function mapInBatches<T, R>(items: T[], batchSize: number, fn: (t: T) => P
   return out;
 }
 
+export const getStockNews = cache(async (symbol: string): Promise<StockNewsType[]> => {
+  try{
+    const queryParam = typeof symbol === 'string' ? symbol.trim() : '';
+    if (!queryParam) {
+      return [];
+    }
+    const url = `${MARKET_AUX_BASE_URL}/news/all?symbols=${queryParam}&filter_entities=true&language=en&api_token=${process.env.MARKETAUX_KEY}&limit=3&filter_entities=true&must_have_entities=true`;
+    const data:any = await fetchJson(url, 10000);
+    if (!data || !data.data || !Array.isArray(data.data)) {
+      return [];
+    }
+    const news: StockNewsType[] = data?.data.map((item: any) => ({
+      title: item.title || 'N/A',
+      url: item.url || '',
+      source: item.source || 'N/A',
+      publishedAt: item.published_at || '',
+      description: item.description || 'N/A'
+    }));
+
+    return news;
+
+  }catch(err){
+    console.error('Fetching stock news failed', err);
+    return [];
+  }
+});
+
 export const searchStocks = cache(async (query?: string): Promise<StockWithWatchlistStatus[]> => {
   try {
     const queryParam = typeof query === 'string' ? query.trim() : '';
@@ -66,7 +95,7 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         3,
         async (symbol) => {
           try {
-            console.log('Fetching profile for popular symbol', symbol);
+            // console.log('Fetching profile for popular symbol', symbol);
             const profile = await yahooFinance.search(symbol);
             return { symbol, profile } as { symbol: string; profile: any };
           } catch (err) {
@@ -99,7 +128,7 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         }
       }
     } else {
-      console.log('Fetching profile for selected symbol', queryParam);
+      // console.log('Fetching profile for selected symbol', queryParam);
       const data = await yahooFinance.search(queryParam);
       
       if (data === null || !data.quotes || !Array.isArray(data.quotes)) {
