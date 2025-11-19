@@ -13,6 +13,7 @@ import { promises as fsp } from "fs";
 import { AI_STOCK_RECOMMENDATION_PROMPT } from "../inngest/prompt";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createAgent } from "langchain";
+import { selectAvailableModel } from "../modelRatelimit/availableModel";
 
 
 export async function runResearch(query: string): Promise<string | undefined> {
@@ -22,8 +23,14 @@ export async function runResearch(query: string): Promise<string | undefined> {
       tools.push(searchMarketTrend, searchFinancialNews);
     }
 
+    const modal = selectAvailableModel();
+    console.log(modal)
+    if (!modal) {
+      throw new Error('No models available within rate limits. Please try again later.');
+    }
+
     const llm = new ChatGoogleGenerativeAI({
-      model: "gemini-2.5-flash",
+      model: modal,
       maxRetries: 3,
       temperature: 0,
       apiKey: process.env.GOOGLE_API_KEY,
@@ -48,6 +55,6 @@ export async function runResearch(query: string): Promise<string | undefined> {
     
   } catch (error) {
     console.error("Error in runResearch:", error);
-    throw new Error(`Research failed: ${error}`);
+    return "Error occurred while processing your request.";
   }
 }

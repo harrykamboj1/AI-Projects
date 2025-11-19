@@ -1,7 +1,7 @@
 import { GEMINI_MODELS } from "../constants";
 import rateLimitTracker from "./RateLimitTracker";
 
-function selectAvailableModel(preferredModels = null) {
+export function selectAvailableModel(preferredModels = null) {
     const modelsToCheck = preferredModels || Object.keys(GEMINI_MODELS);
     const sortedModels = preferredModels 
     ? modelsToCheck 

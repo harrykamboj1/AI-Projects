@@ -320,25 +320,25 @@ export const GEMINI_MODELS = {
       rpm: 15,        
       tpm: 250000,   
       rpd: 1000,      
-      priority: 1   
+      priority: 2  
     },
     'gemini-2.0-flash-lite': {
       rpm: 30,
       tpm: 1000000,
       rpd: 200,
-      priority: 2
+      priority: 3
     },
     'gemini-2.0-flash': {
       rpm: 15,       
       tpm: 1000000,  
       rpd: 1500,   
-      priority: 3
+      priority: 4
     },
     'gemini-2.5-flash': {
       rpm: 15,       
       tpm: 4000000, 
       rpd: 1500,     
-      priority: 4
+      priority: 1
     }
   };
   
