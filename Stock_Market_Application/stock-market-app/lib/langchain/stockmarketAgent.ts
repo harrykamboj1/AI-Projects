@@ -30,7 +30,7 @@ export async function runResearch(query: string): Promise<string | undefined> {
     }
 
     const llm = new ChatGoogleGenerativeAI({
-      model: modal,
+      model: 'gemini-2.5-flash-lite',
       maxRetries: 3,
       temperature: 0,
       apiKey: process.env.GOOGLE_API_KEY,

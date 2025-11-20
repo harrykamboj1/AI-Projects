@@ -19,6 +19,7 @@ import {
   AlertCircle,
   AlertTriangle,
   IndianRupee,
+  Info,
   Loader2,
   Newspaper,
   Sparkles,
@@ -66,7 +67,6 @@ const StockDetails = ({ params }: StockDetailsParams) => {
           setLoading(false);
           return;
         }
-
         try {
           const parsedData = JSON.parse(cleanJson);
 
@@ -165,12 +165,12 @@ const StockDetails = ({ params }: StockDetailsParams) => {
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent className="bg-zinc-950 border-zinc-800 max-w-4xl w-[90vw] max-h-[90vh] overflow-y-auto text-zinc-100 p-0">
+              <DialogContent className="bg-zinc-950 border-zinc-800  w-full overflow-x-auto max-h-[90vh] overflow-y-auto text-zinc-100 p-0">
                 {/* 1. HEADER SECTION */}
                 <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 p-6">
                   <DialogTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-gradient-to-br from-yellow-400/20 to-yellow-600/20 border border-yellow-500/30 rounded-xl">
+                      <div className="p-3 bg-linear-to-br from-yellow-400/20 to-yellow-600/20 border border-yellow-500/30 rounded-xl">
                         <Sparkles className="w-6 h-6 text-yellow-500" />
                       </div>
                       <div>
@@ -274,7 +274,16 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                         />
                         <MetricCard
                           label="Target Price"
-                          value={recommendation.recommendation.target_price}
+                          value={
+                            recommendation.recommendation.target_price.startsWith(
+                              "$"
+                            )
+                              ? recommendation.recommendation.target_price.replace(
+                                  "$",
+                                  "₹"
+                                )
+                              : `₹${recommendation.recommendation.target_price}`
+                          }
                           highlight="text-yellow-400"
                         />
                       </div>
@@ -368,10 +377,11 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                           <Newspaper className="w-4 h-4" /> Recent News Context
                         </h3>
                         <div className="grid gap-3">
-                          {recommendation.news.slice(0, 2).map((item, i) => (
+                          {recommendation.news.slice(0, 3).map((item, i) => (
                             <a
                               key={i}
-                              href="#"
+                              target="_blank"
+                              href={item.url !== "" ? item.url : "#"}
                               className="group block bg-zinc-900/30 hover:bg-zinc-900 border border-zinc-800 rounded-lg p-4 transition-colors"
                             >
                               <h4 className="text-zinc-200 font-medium group-hover:text-yellow-400 transition-colors truncate">
@@ -382,6 +392,23 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                               </p>
                             </a>
                           ))}
+                        </div>
+                      </div>
+
+                      <div className="bg-black rounded-lg text-yellow-200">
+                        <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 flex items-start gap-4">
+                          <Info className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" />
+                          <div>
+                            <h3 className="font-semibold text-yellow-400">
+                              Disclaimer
+                            </h3>
+                            <p className="text-sm text-yellow-300/80 mt-1">
+                              Disclaimer: This is an AI-generated recommendation
+                              based on available data. Please conduct your own
+                              research and consult with a financial advisor
+                              before making investment decisions.
+                            </p>
+                          </div>
                         </div>
                       </div>
                     </div>

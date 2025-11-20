@@ -76,7 +76,8 @@ Final JSON Format (your output MUST match this shape):
   "news": [
     {
       "title": "",
-      "summary": ""
+      "summary": "",
+      "url": "",
     }
   ],
   "fundamentals": {

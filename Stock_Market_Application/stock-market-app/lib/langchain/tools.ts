@@ -219,7 +219,6 @@ export const searchMarketTrend = tool(
       try {
         const query = `${companyName} ${symbol} financial news stock earnings latest`;
         const results = await webSearch.invoke({query: query});
-  
         return JSON.stringify(
           {
             symbol,
@@ -240,6 +239,7 @@ export const searchMarketTrend = tool(
       schema: z.object({
         companyName: z.string().describe("The company name"),
         symbol: z.string().describe("The stock symbol"),
+        url: z.string().optional().describe("The news article URL if available"),
       }),
     }
   );

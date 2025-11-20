@@ -18,6 +18,7 @@ export interface StockSnapshot {
 export interface NewsItem {
   title: string;
   summary: string;
+  url: string;
 }
 
 export interface Fundamentals {
