@@ -3,6 +3,11 @@ import { cache } from "react";
 import { POPULAR_INDIAN_STOCK_SYMBOLS } from "../constants";
 import YahooFinance from "yahoo-finance2";
 import { StockNewsType } from "../types";
+import { auth } from "../better-auth";
+import { redirect } from "next/navigation";
+import { headers } from "next/headers";
+import { getWatchlistSymbolsByEmail } from "./watch.actions";
+import { formatChangePercent, formatMarketCapValue, formatPrice } from "../utils";
 
 
 type StockMatch = { [k: string]: string };
@@ -57,6 +62,11 @@ async function mapInBatches<T, R>(items: T[], batchSize: number, fn: (t: T) => P
 
 export const getStockNews = cache(async (symbol: string): Promise<StockNewsType[]> => {
   try{
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user) redirect('/sign-in');
+
     const queryParam = typeof symbol === 'string' ? symbol.trim() : '';
     if (!queryParam) {
       return [];
@@ -84,6 +94,18 @@ export const getStockNews = cache(async (symbol: string): Promise<StockNewsType[
 
 export const searchStocks = cache(async (query?: string): Promise<StockWithWatchlistStatus[]> => {
   try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user) redirect('/sign-in');
+
+    const userWatchlistSymbols = await getWatchlistSymbolsByEmail(
+      session.user.email
+    );
+
+    const watchlistSet = new Set(
+      userWatchlistSymbols.list.map((sym: string) => sym.symbol)
+    );
     const queryParam = typeof query === 'string' ? query.trim() : '';
     let rawResults: StockWithWatchlistStatus[] = [];
 
@@ -95,7 +117,6 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         3,
         async (symbol) => {
           try {
-            // console.log('Fetching profile for popular symbol', symbol);
             const profile = await yahooFinance.search(symbol);
             return { symbol, profile } as { symbol: string; profile: any };
           } catch (err) {
@@ -114,7 +135,7 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
               name: quote.longname ?? quote.shortname ?? 'N/A',
               exchange: quote.exchDisp ?? quote.exchange ?? '',
               type: quote.quoteType ?? DEFAULT_TYPE,
-              isInWatchlist: false
+              isInWatchlist: watchlistSet.has(quote.symbol)
             });
           }
         } else {
@@ -123,24 +144,25 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
             name: 'N/A',
             exchange: '',
             type: DEFAULT_TYPE,
-            isInWatchlist: false
+            isInWatchlist: watchlistSet.has(p.symbol)
           });
         }
       }
     } else {
-      // console.log('Fetching profile for selected symbol', queryParam);
       const data = await yahooFinance.search(queryParam);
       
       if (data === null || !data.quotes || !Array.isArray(data.quotes)) {
         rawResults = [];
       } else {
-        rawResults = data.quotes.map((quote: any) => ({
-          symbol: quote.symbol ?? 'N/A',
-          name: quote.longname ?? quote.shortname ?? 'N/A',
-          exchange: quote.exchDisp ?? quote.exchange ?? '',
-          type: quote.quoteType ?? DEFAULT_TYPE,
-          isInWatchlist: false
-        }));
+        rawResults = data.quotes.map((quote: any) => {
+          return {
+            symbol: quote.symbol ?? 'N/A',
+            name: quote.longname ?? quote.shortname ?? 'N/A',
+            exchange: quote.exchDisp ?? quote.exchange ?? '',
+            type: quote.quoteType ?? DEFAULT_TYPE,
+            isInWatchlist: watchlistSet.has(quote.symbol)
+          };
+        });
       }
     }
 
@@ -157,7 +179,7 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
         name: r.name && r.name !== '' ? r.name : sym,
         exchange: (r.exchange && r.exchange !== '') ? r.exchange : DEFAULT_REGION,
         type: r.type ?? DEFAULT_TYPE,
-        isInWatchlist: false
+        isInWatchlist: watchlistSet.has(sym)
       });
 
       if (normalized.length >= 10) break;
@@ -169,3 +191,32 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
     return [];
   }
 });
+
+
+export const getStocksDetails = cache(async(symbol:string)=>{
+  console.log(symbol)
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+  if (!session?.user) redirect('/sign-in');
+
+  const cleanSymbol = symbol.trim().toUpperCase();
+
+  try{
+    const quote = await yahooFinance.quote(symbol);
+
+    return {
+      symbol:cleanSymbol,
+      company:quote.longName,
+      currentPrice:quote.regularMarketPrice,
+      changePercent: quote.regularMarketChangePercent,
+      priceFormatted:formatPrice(quote.regularMarketPrice),
+      changeFormatted: formatChangePercent(quote.regularMarketChangePercent),
+      peRatio: quote.trailingPE?.toFixed(1) || '—',
+      marketCapFormatted: formatMarketCapValue(quote.marketCap)
+    }
+  }catch(err){
+    console.error('Error in getStockDetails :: ' + err)
+    return null;
+  }
+})

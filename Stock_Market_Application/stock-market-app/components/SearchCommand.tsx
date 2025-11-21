@@ -13,6 +13,7 @@ import Link from "next/link";
 import { Loader2, Star, TrendingUp } from "lucide-react";
 import { useDebounce } from "@/hooks/useDebounce";
 import { searchStocks } from "@/lib/actions/alphaAdvantage.actions";
+import WatchlistButton from "./WatchListButton";
 
 type Stock = {
   symbol: string;
@@ -67,6 +68,7 @@ const SearchCommand = ({
     setLoading(true);
     try {
       const results = await searchStocks(searchTerm.trim());
+      console.log(results);
       setStocks(results);
     } catch (e) {
       console.error("Error while handleSearch stocks", e);
@@ -87,6 +89,14 @@ const SearchCommand = ({
     setSearchTerm("");
 
     setStocks(initialStocks);
+  };
+
+  const handleWatchListChange = (symbol: string, isAdded: boolean) => {
+    setStocks(
+      initialStocks?.map((stock) =>
+        stock.symbol === symbol ? { ...stock, isInWatchlist: isAdded } : stock
+      )
+    );
   };
 
   return (
@@ -143,7 +153,13 @@ const SearchCommand = ({
                         {stock.symbol} | {stock.exchange} | {stock.type}
                       </div>
                     </div>
-                    <Star />
+                    <WatchlistButton
+                      symbol={stock.symbol}
+                      company={stock.name}
+                      type="icon"
+                      isInWatchlist={stock.isInWatchlist}
+                      onWatchlistChange={handleWatchListChange}
+                    />
                   </Link>
                 </li>
               ))}

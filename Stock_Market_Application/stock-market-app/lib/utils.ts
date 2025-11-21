@@ -82,10 +82,6 @@ function parseNumber(value: string | number | undefined): number | undefined {
   return Number.isFinite(n) ? n : undefined;
 }
 
-/**
- * Parse + normalize JSON into typed object.
- * Throws on validation error.
- */
 export function parseAndNormalize(raw: unknown): StockResearch {
   const validated = StockResearchSchema.parse(raw) as StockResearchParsed;
 
@@ -119,4 +115,27 @@ export function parseAndNormalize(raw: unknown): StockResearch {
     snapshot: snapshot as any,
     technicals: technicals as any,
   } as StockResearch;
+}
+
+export const formatPrice = (price: number) => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 2,
+  }).format(price);
+};
+
+export const formatChangePercent = (changePercent?: number) => {
+  if (!changePercent) return '';
+  const sign = changePercent > 0 ? '+' : '';
+  return `${sign}${changePercent.toFixed(2)}%`;
+};
+
+export function formatMarketCapValue(marketCapUsd: number): string {
+  if (!Number.isFinite(marketCapUsd) || marketCapUsd <= 0) return 'N/A';
+
+  if (marketCapUsd >= 1e12) return `$${(marketCapUsd / 1e12).toFixed(2)}T`; 
+  if (marketCapUsd >= 1e9) return `$${(marketCapUsd / 1e9).toFixed(2)}B`; 
+  if (marketCapUsd >= 1e6) return `$${(marketCapUsd / 1e6).toFixed(2)}M`; 
+  return `$${marketCapUsd.toFixed(2)}`; 
 }

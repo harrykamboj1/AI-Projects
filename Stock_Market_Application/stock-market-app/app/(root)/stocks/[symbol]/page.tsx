@@ -3,7 +3,10 @@ import TradingViewWidgets from "@/components/TradingViewWidgets";
 import { Button } from "@/components/ui/button";
 import WatchListButton from "@/components/WatchListButton";
 import { Circles } from "react-loader-spinner";
-import { getStockNews } from "@/lib/actions/alphaAdvantage.actions";
+import {
+  getStockNews,
+  getStocksDetails,
+} from "@/lib/actions/alphaAdvantage.actions";
 import {
   BASELINE_WIDGET_CONFIG,
   CANDLE_CHART_WIDGET_CONFIG,
@@ -27,14 +30,27 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { runResearch } from "@/lib/langchain/stockmarketAgent";
-import { parseAndNormalize } from "@/lib/utils";
 import { StockAnalysisResponse } from "@/lib/types";
+import { getUserWatchlist } from "@/lib/actions/watch.actions";
+import { notFound } from "next/navigation";
+import { IWatchlist } from "@/lib/models/WatchList";
 
 type StockDetailsParams = {
   params: Promise<{
     symbol: string;
   }>;
 };
+
+type StockData = {
+  symbol: string;
+  company: string;
+  currentPrice: any;
+  changePercent: any;
+  priceFormatted: string;
+  changeFormatted: string;
+  peRatio: any;
+  marketCapFormatted: string;
+} | null;
 
 const StockDetails = ({ params }: StockDetailsParams) => {
   const [open, setOpen] = useState(false);
@@ -43,6 +59,9 @@ const StockDetails = ({ params }: StockDetailsParams) => {
   const [stockNews, setStockNews] = useState([]);
   const [finalSymbol, setFinalSymbol] = useState("");
   const [symbol, setSymbol] = useState("");
+  const [stockData, setStockData] = useState<StockData>(null);
+  const [watchlist, setWatchlist] = useState<IWatchlist[]>([]);
+  const [isWatchList, setIsWatchList] = useState<boolean>(false);
   const [recommendation, setRecommendation] =
     useState<StockAnalysisResponse | null>(null);
 
@@ -69,9 +88,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
         }
         try {
           const parsedData = JSON.parse(cleanJson);
-
           const typedData = parsedData as StockAnalysisResponse;
-
           setRecommendation(typedData);
         } catch (e: any) {
           console.error("JSON Parse Error:", e);
@@ -79,7 +96,6 @@ const StockDetails = ({ params }: StockDetailsParams) => {
             "Failed to process AI response. The model returned invalid JSON."
           );
         }
-
         setLoading(false);
       }
     } catch (err) {
@@ -95,8 +111,17 @@ const StockDetails = ({ params }: StockDetailsParams) => {
         return;
       }
       setSymbol(symbol);
-      const news = await getStockNews(symbol);
+
+      const [news, stockDetails, userWatchlist] = await Promise.all([
+        getStockNews(symbol),
+        getStocksDetails(symbol.toUpperCase()),
+        getUserWatchlist(),
+      ]);
+
+      setStockData(stockDetails);
+      setWatchlist(userWatchlist);
       setStockNews(news);
+
       const extractSymbol = symbol
         .replace(/\.(BSE|BO|NS|NSE)$/i, "")
         .toUpperCase();
@@ -105,6 +130,21 @@ const StockDetails = ({ params }: StockDetailsParams) => {
 
     fetchData();
   }, [params]);
+
+  useEffect(() => {
+    if (!symbol || !watchlist || watchlist.length === 0) {
+      setIsWatchList(false);
+      return;
+    }
+
+    const normalizedSymbol = symbol.toUpperCase();
+
+    const isInWatchlist = watchlist.some(
+      (item: IWatchlist) => item.symbol === normalizedSymbol
+    );
+
+    setIsWatchList(isInWatchlist);
+  }, [watchlist, symbol]);
 
   const scriptUrl = `https://s3.tradingview.com/external-embedding/embed-widget-`;
 
@@ -122,6 +162,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
     );
   }
 
+  if (!stockData) notFound();
   return (
     <div>
       <section className="grid stock-details-container">
@@ -147,15 +188,18 @@ const StockDetails = ({ params }: StockDetailsParams) => {
           />
         </div>
 
-        {/* Right column */}
         <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between ">
-            <WatchListButton
-              symbol={symbol.toUpperCase()}
-              company={symbol.toUpperCase()}
-              isInWatchlist={false}
-            />
+          <div className="flex items-center justify-between">
+            {stockData && (
+              <WatchListButton
+                symbol={symbol.toUpperCase()}
+                company={stockData.company}
+                isInWatchlist={isWatchList}
+                type="button"
+              />
+            )}
           </div>
+
           <div className="flex items-center justify-between">
             <Button
               onClick={() => handleAIStockRecommendation()}
@@ -165,8 +209,8 @@ const StockDetails = ({ params }: StockDetailsParams) => {
             </Button>
 
             <Dialog open={open} onOpenChange={setOpen}>
-              <DialogContent className="bg-zinc-950 border-zinc-800  w-full overflow-x-auto max-h-[90vh] overflow-y-auto text-zinc-100 p-0">
-                {/* 1. HEADER SECTION */}
+              <DialogContent className="bg-zinc-950 border-zinc-800 w-full overflow-x-auto max-h-[90vh] overflow-y-auto text-zinc-100 p-0">
+                {/* HEADER SECTION */}
                 <div className="sticky top-0 z-10 bg-zinc-950/95 backdrop-blur-sm border-b border-zinc-800 p-6">
                   <DialogTitle className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -187,7 +231,6 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                       </div>
                     </div>
 
-                    {/* Price Tag (Only shows when data is ready) */}
                     {recommendation && (
                       <div className="text-right">
                         <div className="text-2xl font-bold text-white">
@@ -220,7 +263,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                 </div>
 
                 <div className="p-6 space-y-8">
-                  {/* 2. LOADING STATE */}
+                  {/* LOADING STATE */}
                   {loading && (
                     <div className="flex flex-col items-center justify-center py-20 space-y-4">
                       <Loader2 className="w-12 h-12 text-yellow-500 animate-spin" />
@@ -235,7 +278,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                     </div>
                   )}
 
-                  {/* 3. ERROR STATE */}
+                  {/* ERROR STATE */}
                   {error && (
                     <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 flex items-start gap-4">
                       <AlertCircle className="w-6 h-6 text-red-500 shrink-0 mt-0.5" />
@@ -248,10 +291,10 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                     </div>
                   )}
 
-                  {/* 4. DATA DISPLAY (The Main Content) */}
+                  {/* DATA DISPLAY */}
                   {!loading && !error && recommendation && (
                     <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
-                      {/* A. Key Metrics Grid */}
+                      {/* Key Metrics Grid */}
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <MetricCard
                           label="Market Cap"
@@ -288,7 +331,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                         />
                       </div>
 
-                      {/* B. Investment Thesis (Hero Section) */}
+                      {/* Investment Thesis */}
                       <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-6 relative overflow-hidden">
                         <div className="absolute top-0 left-0 w-1 h-full bg-yellow-500" />
                         <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
@@ -321,6 +364,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                       </div>
 
                       <div className="grid md:grid-cols-2 gap-6">
+                        {/* Technical Indicators */}
                         <div className="space-y-4">
                           <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">
                             Technical Indicators
@@ -348,7 +392,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                           </div>
                         </div>
 
-                        {/* C2. Risk Factors */}
+                        {/* Risk Assessment */}
                         <div className="space-y-4">
                           <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider">
                             Risk Assessment
@@ -371,7 +415,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                         </div>
                       </div>
 
-                      {/* D. Recent News */}
+                      {/* Recent News */}
                       <div className="space-y-4">
                         <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-wider flex items-center gap-2">
                           <Newspaper className="w-4 h-4" /> Recent News Context
@@ -395,6 +439,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                         </div>
                       </div>
 
+                      {/* Disclaimer */}
                       <div className="bg-black rounded-lg text-yellow-200">
                         <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-6 flex items-start gap-4">
                           <Info className="w-6 h-6 text-yellow-500 shrink-0 mt-0.5" />
@@ -403,10 +448,10 @@ const StockDetails = ({ params }: StockDetailsParams) => {
                               Disclaimer
                             </h3>
                             <p className="text-sm text-yellow-300/80 mt-1">
-                              Disclaimer: This is an AI-generated recommendation
-                              based on available data. Please conduct your own
-                              research and consult with a financial advisor
-                              before making investment decisions.
+                              This is an AI-generated recommendation based on
+                              available data. Please conduct your own research
+                              and consult with a financial advisor before making
+                              investment decisions.
                             </p>
                           </div>
                         </div>
@@ -437,6 +482,7 @@ const StockDetails = ({ params }: StockDetailsParams) => {
           />
         </div>
       </section>
+
       {stockNews.length > 0 && (
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
           {stockNews.map((newsItem: any, index: number) => (
@@ -459,8 +505,7 @@ function NewsCard({ title, description, url }: any) {
   return (
     <div className="bg-gray-900 p-6 rounded-xl shadow-md hover:shadow-2xl transition-all duration-300 flex flex-col gap-4 border border-gray-700 hover:border-gray-500">
       <h2 className="text-yellow-400 text-xl font-bold">{title}</h2>
-      <p className="text-gray-300 ">{description}</p>
-
+      <p className="text-gray-300">{description}</p>
       <a
         href={url}
         target="_blank"
