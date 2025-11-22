@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Watchlist from "../models/WatchList";
 import { revalidatePath } from "next/cache";
 import { getStocksDetails } from "./alphaAdvantage.actions";
+import { searchFinancialNews, searchFinancialNewsNotTool } from "../langchain/tools";
 
 export const addToWatchList = async (symbol: string,company:string) => {
     try{
@@ -119,12 +120,15 @@ export const getWatchlistWithData = async () => {
     const stocksWithData = await Promise.all(
       watchlist.map(async (item) => {
         const stockData = await getStocksDetails(item.symbol);
-
         if (!stockData) {
           console.warn(`Failed to fetch data for ${item.symbol}`);
           return item;
         }
-
+        const stockNews = await searchFinancialNewsNotTool({ 
+          companyName: item.company, 
+          symbol: item.symbol 
+        })
+        const result = JSON.parse(stockNews)
         return {
           company: stockData.company,
           symbol: stockData.symbol,
@@ -134,11 +138,56 @@ export const getWatchlistWithData = async () => {
           changePercent: stockData.changePercent,
           marketCap: stockData.marketCapFormatted,
           peRatio: stockData.peRatio,
+          stockNews:result?.results?.results
         };
       }),
     );
+    
 
     return JSON.parse(JSON.stringify(stocksWithData));
+  } catch (error) {
+    console.error('Error loading watchlist:', error);
+    throw new Error('Failed to fetch watchlist');
+  }
+};
+
+
+export const getWatchListSymbolNewsData = async () => {
+  try {
+    const session = await auth.api.getSession({
+      headers: await headers(),
+    });
+    if (!session?.user) redirect('/sign-in');
+
+    const watchlist = await Watchlist.find({ userId: session.user.id }).sort({ addedAt: -1 }).lean();
+
+    if (watchlist.length === 0) return [];
+    const stocksWithData = await Promise.all(
+      watchlist.map(async (item) => {
+        const stockNews = await searchFinancialNewsNotTool({ 
+          companyName: item.company, 
+          symbol: item.symbol 
+        });
+        
+        const result = JSON.parse(stockNews);
+        const newsArray = result?.results?.results;
+        
+        if (newsArray && newsArray.length > 0) {
+          return newsArray.slice(0,3).map(newsItem => ({
+            companyName: item.company,
+            symbol: item.symbol,
+            content: newsItem.content || newsItem.description || '',
+            url: newsItem.url || newsItem.link || '',
+            title: newsItem.title || ''
+          }));
+        }
+        
+        return [];
+      }),
+    );
+    
+
+    return JSON.parse(JSON.stringify(stocksWithData.flat()));
   } catch (error) {
     console.error('Error loading watchlist:', error);
     throw new Error('Failed to fetch watchlist');

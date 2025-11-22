@@ -211,7 +211,7 @@ export const searchMarketTrend = tool(
   
   // Search Financial News Tool
   export const searchFinancialNews = tool(
-    async ({ companyName, symbol }: { companyName: string; symbol: string }) => {
+    async ({ companyName, symbol }: { companyName: string, symbol: string }) => {
       if (!webSearch) {
         return JSON.stringify({ error: "No search provider configured" });
       }
@@ -243,5 +243,30 @@ export const searchMarketTrend = tool(
       }),
     }
   );
+
+
+  export const searchFinancialNewsNotTool =  async ({ companyName, symbol }: { companyName: string, symbol: string }) => {
+      if (!webSearch) {
+        return JSON.stringify({ error: "No search provider configured" });
+      }
+
+     
+
+      try {
+        const query = `${companyName} ${symbol} financial news stock earnings latest`;
+        const results = await webSearch.invoke({query: query});
+        return JSON.stringify(
+          {
+            symbol,
+            company: companyName,
+            results,
+          },
+          null,
+          2
+        );
+      } catch (error) {
+        return JSON.stringify({ error: `${error}` });
+      }
+    }
 
   export {webSearch};

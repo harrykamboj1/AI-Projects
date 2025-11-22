@@ -194,7 +194,6 @@ export const searchStocks = cache(async (query?: string): Promise<StockWithWatch
 
 
 export const getStocksDetails = cache(async(symbol:string)=>{
-  console.log(symbol)
   const session = await auth.api.getSession({
     headers: await headers(),
   });
