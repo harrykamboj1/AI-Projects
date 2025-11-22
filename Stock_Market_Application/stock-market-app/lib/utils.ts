@@ -139,3 +139,10 @@ export function formatMarketCapValue(marketCapUsd: number): string {
   if (marketCapUsd >= 1e6) return `$${(marketCapUsd / 1e6).toFixed(2)}M`; 
   return `$${marketCapUsd.toFixed(2)}`; 
 }
+
+
+export function getChangeColorClass(percent: number): string {
+  if (percent > 0) return "text-green-500";  
+  if (percent < 0) return "text-red-500";    
+  return "text-zinc-400";                    
+}

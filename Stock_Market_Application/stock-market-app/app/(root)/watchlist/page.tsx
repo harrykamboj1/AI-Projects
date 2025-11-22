@@ -1,13 +1,15 @@
 import SearchCommand from "@/components/SearchCommand";
+import { WatchlistTable } from "@/components/WatchListTable";
 import { searchStocks } from "@/lib/actions/alphaAdvantage.actions";
+import { getWatchlistWithData } from "@/lib/actions/watch.actions";
 import { Star } from "lucide-react";
 import React from "react";
 
 const WatchListPage = async () => {
-  const watchList = [];
+  const watchlist = await getWatchlistWithData();
   const initialStocks = await searchStocks();
-
-  if (watchList.length !== 0) {
+  console.log(watchlist);
+  if (watchlist.length == 0) {
     return (
       <section className="flex justify-center container gap-8 flex-col items-center md:mt-10 p-6 text-center">
         <div className="flex flex-col items-center justify-center text-center">
@@ -30,7 +32,7 @@ const WatchListPage = async () => {
           <h2 className="watchlist-title">Watchlist</h2>
           <SearchCommand initialStocks={initialStocks} />
         </div>
-        {/* WatchlistTable */}
+        <WatchlistTable watchlist={watchlist} />
       </div>
     </section>
   );
