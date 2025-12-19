@@ -11,3 +11,4 @@ langchain-core==1.2.2
 gradio==6.1.0
 sentence-transformers==5.2.0
 transformers==4.57.3
+pymupdf4llm==0.2.7
