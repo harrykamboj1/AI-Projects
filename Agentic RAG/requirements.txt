@@ -12,3 +12,5 @@ gradio==6.1.0
 sentence-transformers==5.2.0
 transformers==4.57.3
 pymupdf4llm==0.2.7
+PyMuPDF==1.26.6
+pymupdf-layout==1.26.6
