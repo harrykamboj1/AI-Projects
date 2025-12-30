@@ -14,3 +14,5 @@ transformers==4.57.3
 pymupdf4llm==0.2.7
 PyMuPDF==1.26.6
 pymupdf-layout==1.26.6
+ipython==8.37.0
+ipython_pygments_lexers==1.1.1
