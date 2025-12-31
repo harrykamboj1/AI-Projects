@@ -2,7 +2,7 @@
 
 A specialized Retrieval-Augmented Generation (RAG) system designed to synthesize high-quality insights from PDF documents. This project implements an advanced "Parent-Child" chunking strategy, hybrid search, and agentic workflows using LangGraph and Ollama.
 
-## 🚀 Key Features
+##  Key Features
 
 *   **Intelligent PDF Processing**:
     *   **Adaptive Ingestion**: Categorizes PDFs into *Simple* (text-only) and *Medium/Complex* (scanned, tables, images).
@@ -29,7 +29,7 @@ A specialized Retrieval-Augmented Generation (RAG) system designed to synthesize
 *   **Document Processing**: `PyMuPDF`, `Docling`
 *   **UI**: Gradio
 
-## 📂 Project Structure
+##  Project Structure
 
 ```bash
 Agentic RAG/
@@ -62,7 +62,7 @@ Agentic RAG/
     *   **Step 2: Convert to Generic Markdown**: Open and run `pdf_to_markdown.ipynb` to process the PDFs into clean Markdown.
     *   **Step 3: Index & Run RAG**: Open `RAG_FOR_SYTHENSIZE_PDF_DATA.ipynb` to index the data into Qdrant and start the agentic RAG workflow.
 
-## 🧠 How It Works (The "Why")
+##  How It Works (The "Why")
 
 Standard RAG systems often face a trade-off: **Small chunks** are good for search precision but lack context, while **Large chunks** provide context but dilute search accuracy.
 
