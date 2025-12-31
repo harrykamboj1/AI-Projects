@@ -18,7 +18,7 @@ A specialized Retrieval-Augmented Generation (RAG) system designed to synthesize
     *   Built with **LangGraph** to create stateful, multi-step reasoning agents.
     *   Supports local LLM execution via **Ollama**.
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 *   **Frameworks**: [LangChain](https://www.langchain.com/), [LangGraph](https://langchain-ai.github.io/langgraph/)
 *   **Vector Database**: [Qdrant](https://qdrant.tech/) (Local file-based)
@@ -42,7 +42,7 @@ Agentic RAG/
 └── requirements.txt           # Python dependencies
 ```
 
-## ⚡ Getting Started
+## Getting Started
 
 ### Prerequisites
 
