@@ -20,7 +20,7 @@ A specialized Retrieval-Augmented Generation (RAG) system designed to synthesize
 
 ## Tech Stack
 
-*   **Frameworks**: [LangChain](https://www.langchain.com/), [LangGraph](https://langchain-ai.github.io/langgraph/)
+*   **Frameworks**: [LangChain](https://www.langchain.com/),[LangGraph](https://langchain-ai.github.io/langgraph/)
 *   **Vector Database**: [Qdrant](https://qdrant.tech/) (Local file-based)
 *   **LLM Engine**: [Ollama](https://ollama.com/)
 *   **Embeddings**:
